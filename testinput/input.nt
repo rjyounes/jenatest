@@ -1,0 +1,13 @@
+<http://ld4l.library.cornell.edu/individual/102063> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bibframe.org/vocab/Work> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bibframe.org/vocab/Text> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bibframe.org/vocab/Work> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bibframe.org/vocab/Text> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/authorizedAccessPoint> "Gordon, Burgess L. (Burgess Lee), 1892- Clinical cardiopulmonary physiology. Sponsored by the American College of Chest Physicians. Editorial board: Burgess L. Gordon, chairman, editor-in-chief, Albert H. Andrews [and others]Clinical cardiopulmonary physiology" . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/workTitle> <http://ld4l.library.cornell.edu/individual/102063title5> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/contributor> <http://ld4l.library.cornell.edu/individual/102063person6> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/contributor> <http://ld4l.library.cornell.edu/individual/102063organization7> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/language> <http://id.loc.gov/vocabulary/languages/eng> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/subject> <http://ld4l.library.cornell.edu/individual/102063topic9> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/classificationLcc> <http://id.loc.gov/authorities/classification/RC941> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/classificationDdc> <http://dewey.info/class/616.2/about> . 
+<http://ld4l.library.cornell.edu/individual/102063> <http://bibframe.org/vocab/authorizedAccessPoint> "gordonburgessl1892americancollegeofchestphysiciansclinicalcardiopulmonaryphysiologyengworktext"@x-bf-hash . 
