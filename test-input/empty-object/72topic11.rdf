@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:relators="http://id.loc.gov/vocabulary/relators/"
+    xmlns:madsrdf="http://www.loc.gov/mads/rdf/v1#"
+    xmlns:bf2="http://bibframe.org/vocab2/"
+    xmlns:bf="http://bibframe.org/vocab/"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <bf:Topic rdf:about="http://draft.ld4l.org/cornell/72topic11">
+        <bf:authorizedAccessPoint>1894</bf:authorizedAccessPoint>
+        <bf:label>1894</bf:label>
+        <bf:hasAuthority>
+            <madsrdf:Authority>
+                <rdf:type rdf:resource="http://www.loc.gov/mads/rdf/v1#Topic"/>
+                <madsrdf:authoritativeLabel>1894</madsrdf:authoritativeLabel>
+                <madsrdf:isMemberOfMADSScheme rdf:resource=""/>
+            </madsrdf:Authority>
+        </bf:hasAuthority>
+    </bf:Topic>
+</rdf:RDF>

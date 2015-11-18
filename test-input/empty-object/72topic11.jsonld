@@ -1,0 +1,66 @@
+{
+            
+            "<http://draft.ld4l.org/cornell/72topic11>" : {
+                        "<http://bibframe.org/vocab/authorizedAccessPoint>": 
+                                [
+                                    { 
+                                        "value" : "1894",
+                                        "type" : "literal"
+                                    }
+                                ], 
+                            "<http://bibframe.org/vocab/hasAuthority>": 
+                                [
+                                    { 
+                                        "value" : "_:bnode131cornell72",
+                                        "type" : "bnode"
+                                    }
+                                ], 
+                            "<http://bibframe.org/vocab/label>": 
+                                [
+                                    { 
+                                        "value" : "1894",
+                                        "type" : "literal"
+                                    }
+                                ], 
+                            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>": 
+                                [
+                                    { 
+                                        "value" : "http://bibframe.org/vocab/Topic",
+                                        "type" : "uri"
+                                    }
+                                ]
+                        },
+            
+
+
+            "_:bnode131cornell72" : {
+                        "<http://www.loc.gov/mads/rdf/v1#authoritativeLabel>": 
+                                [
+                                    { 
+                                        "value" : "1894",
+                                        "type" : "literal"
+                                    }
+                                ], 
+                            "<http://www.loc.gov/mads/rdf/v1#isMemberOfMADSScheme>": 
+                                [
+                                    { 
+                                        "value" : "",
+                                        "type" : "uri"
+                                    }
+                                ], 
+                            "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>": 
+                                [
+                                    { 
+                                        "value" : "http://www.loc.gov/mads/rdf/v1#Authority",
+                                        "type" : "uri"
+                                    },
+                                    { 
+                                        "value" : "http://www.loc.gov/mads/rdf/v1#Topic",
+                                        "type" : "uri"
+                                    }
+                                ]
+
+                        }
+            
+
+    }

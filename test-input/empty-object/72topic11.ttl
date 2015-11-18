@@ -1,0 +1,16 @@
+@prefix relators: <http://id.loc.gov/vocabulary/relators/> .
+@prefix madsrdf: <http://www.loc.gov/mads/rdf/v1#> .
+@prefix bf2: <http://bibframe.org/vocab2/> .
+@prefix bf: <http://bibframe.org/vocab/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+<http://draft.ld4l.org/cornell/72topic11> a bf:Topic ;
+    bf:authorizedAccessPoint "1894" ;
+    bf:label "1894" ;
+    bf:hasAuthority _:node1a4bq2o58x11 .
+
+_:node1a4bq2o58x11 a madsrdf:Authority , madsrdf:Topic ;
+    madsrdf:authoritativeLabel "1894" ;
+    madsrdf:isMemberOfMADSScheme <unknown:namespace> .
+
