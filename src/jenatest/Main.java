@@ -228,7 +228,7 @@ public class Main {
          * Resource object: unknown:namespace
          * URI scheme: unknown
          * 
-         * NB Turtle output will create invalid Turtle due to the resulting
+         * NB Turtle input will output invalid Turtle due to the resulting
          * semi-colon rather than period at the end of the previous line.
          * =================================================
          *
