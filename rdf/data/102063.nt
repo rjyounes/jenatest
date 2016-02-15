@@ -1,0 +1,9 @@
+# <http://draft.ld4l.org/cornell/102063> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bibframe.org/vocab/Work> . 
+<http://draft.ld4l.org/cornell/102063> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://bibframe.org/vocab/Text> . 
+<http://draft.ld4l.org/cornell/102063> <http://bibframe.org/vocab/authorizedAccessPoint> "Gordon, Burgess L. (Burgess Lee), 1892- Clinical cardiopulmonary physiology. Sponsored by the American College of Chest Physicians. Editorial board: Burgess L. Gordon, chairman, editor-in-chief, Albert H. Andrews [and others]Clinical cardiopulmonary physiology" . 
+<http://draft.ld4l.org/cornell/102063> <http://bibframe.org/vocab/workTitle> <http://draft.ld4l.org/cornell/102063title5> . 
+<http://draft.ld4l.org/cornell/102063> <http://bibframe.org/vocab/contributor> <http://draft.ld4l.org/cornell/102063person6> . 
+<http://draft.ld4l.org/cornell/102063> <http://bibframe.org/vocab/language> <http://id.loc.gov/vocabulary/languages/eng> . 
+<http://draft.ld4l.org/cornell/102063> <http://bibframe.org/vocab/subject> <http://draft.ld4l.org/cornell/102063topic9> . 
+
+

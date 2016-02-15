@@ -1,27 +1,44 @@
 package jenatest;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.reasoner.Reasoner;
+import org.apache.jena.reasoner.ReasonerRegistry;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.RiotException;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.Assert;
 
 public class Main {
     
@@ -29,8 +46,7 @@ public class Main {
     
     public static void main(String[] args) {
         
-        System.out.println("Start tests.");
-
+        LOGGER.info("Start");
         // testResourceRenaming();
         // testAddStmtIteratorToModel();
         // testEmptyObject();
@@ -39,9 +55,157 @@ public class Main {
         // testLiteralNoLanguage();
         // testNodeGetLiteral();
         // testIteratorToList();
-        testIteratorToListAndForeachRemaining();
+        // testIteratorToListAndForeachRemaining();
+        // testAssertionsAndRetractions();
+        // testUriChars();
+        // testModelRemovesDuplicateTriples();
+        // testEmptyIteratorToList();
+        testInfModel();
 
-        System.out.println("End tests.");
+        LOGGER.info("End tests.");
+    }
+    
+    private static void testInfModel() {
+
+        // Read the data into a model
+        Model data = ModelFactory.createDefaultModel(); 
+        try {
+            data.read("rdf/data/102063.nt");
+        } catch (RiotException e) {
+           e.printStackTrace();
+        }
+
+        String sparql = "CONSTRUCT { ?s ?p ?o } WHERE { " 
+                + "?s ?p ?o "
+                + "FILTER (?s = <http://draft.ld4l.org/cornell/102063> || "
+                + "?o = <http://draft.ld4l.org/cornell/102063>)"
+                + " }";
+        LOGGER.info(sparql);
+        
+        Query query = QueryFactory.create(sparql);
+        QueryExecution qexec = QueryExecutionFactory.create(
+                query, data);
+        Model dataModel = qexec.execConstruct(); 
+        LOGGER.info("Data model size: " + dataModel.size());
+        
+        // Read the ontology into a model
+        OntModel bfOnt = ModelFactory.createOntologyModel(); 
+        try {
+            bfOnt.read("http://bibframe.org/vocab/");
+        } catch (RiotException e) {
+           e.printStackTrace();
+        }
+        
+        Reasoner owlReasoner = ReasonerRegistry.getOWLReasoner();
+        InfModel infModel = 
+                ModelFactory.createInfModel(owlReasoner, bfOnt, dataModel);
+        Model rawModel = infModel.getRawModel();
+        LOGGER.info("raw model size: " + rawModel.size());
+        LOGGER.info("inf model size: " + infModel.size());
+        LOGGER.info("raw model = data model? " + rawModel.isIsomorphicWith(dataModel));
+        Resource work = infModel.getResource("http://draft.ld4l.org/cornell/102063");
+        Resource workClass = infModel.getResource("http://bibframe.org/vocab/Work");
+
+        LOGGER.info("raw model contains? " + rawModel.contains(work, RDF.type, workClass));
+        LOGGER.info("inf model contains? " + infModel.contains(work, RDF.type, workClass));
+          
+        Resource work1 = ResourceFactory.createResource("http://draft.ld4l.org/cornell/102063");
+        Resource workClass1 = ResourceFactory.createResource("http://bibframe.org/vocab/Work");
+        LOGGER.info("inf model contains? " + infModel.contains(work1, RDF.type, workClass1));
+        
+        LOGGER.info("Inference model:");
+        printModel(infModel);
+     
+    }
+
+    private static void testModelRemovesDuplicateTriples() {
+        /**
+         * Test whether reading in and/or writing out a Jena model removes 
+         * duplicate triples.
+         * Result: duplicates removed when reading the file into a model.
+         */
+        String infile = "testinput/input.nt";
+        String outfile = "output/output.nt";
+        try {
+            long incount = 
+                    Files.newBufferedReader(Paths.get(infile)).lines().count();
+            Model model = ModelFactory.createDefaultModel(); 
+            Assert.assertEquals(13, incount);
+            model.read(infile);
+            Assert.assertEquals(11, model.size());
+            FileOutputStream outStream;
+            outStream = new FileOutputStream(outfile);
+            RDFDataMgr.write(outStream, model, RDFFormat.NTRIPLES);
+            long outcount =
+                    Files.newBufferedReader(Paths.get(outfile)).lines().count();
+            Assert.assertEquals(11, outcount);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    
+    private static void testEmptyIteratorToList() {
+        Model model = ModelFactory.createDefaultModel();
+        List<Statement> stmts = model.listStatements().toList();
+        // No error converting the iterator to a list if the iterator is empty
+        for (Statement s : stmts) {
+            LOGGER.info("Statement: " + s.toString());
+        }
+
+    }
+
+    private static void testUriChars() {
+        Model model = ModelFactory.createDefaultModel();
+        model.read("test-input/valid-uris.nt");
+        printModel(model);
+    }
+    
+    private static void testAssertionsAndRetractions() {
+        Model model = ModelFactory.createDefaultModel();
+        Model retractions = ModelFactory.createDefaultModel();
+        
+        Resource mary = model.createResource("http://example.com/people/mary");
+        Resource john = model.createResource("http://example.com/people/john");        
+        Property property = 
+                model.createProperty("http://example.com/vocab/loves"); 
+        
+        model.add(john, property, mary);
+        retractions.add(john, property, mary);
+        
+        LOGGER.info("Before applying retractions");
+        LOGGER.info("model:");
+        printModel(model);
+        LOGGER.info("retractions:");
+        printModel(retractions);
+        
+        model.remove(retractions);
+        
+        LOGGER.info("After applying retractions");
+       
+        LOGGER.info("model:");
+        printModel(model);
+        LOGGER.info("retractions:");
+        printModel(retractions);
+        
+        Model assertions = ModelFactory.createDefaultModel();
+        assertions.add(mary, property, john);
+        
+        LOGGER.info("Before applying assertions");
+        LOGGER.info("model:");
+        printModel(model);
+        LOGGER.info("assertions:");
+        printModel(assertions);
+        
+        model.add(assertions);
+        
+        LOGGER.info("After applying assertions");
+        LOGGER.info("model:");
+        printModel(model);
+        LOGGER.info("assertions:");
+        printModel(assertions);
+        
     }
     
     private static void testIteratorToListAndForeachRemaining() {
@@ -61,17 +225,17 @@ public class Main {
         StmtIterator it1 = model.listStatements();
         List<Statement> list1 = it1.toList();
         for (Statement s : list1) {
-            System.out.println(s.toString());           
+            LOGGER.info(s.toString());           
         }
-        System.out.println(it1.hasNext() ? "it1 not empty" : "it1 empty");
+        LOGGER.info(it1.hasNext() ? "it1 not empty" : "it1 empty");
         
         StmtIterator it2 = model.listStatements();
         List<Statement> list2 = new ArrayList<Statement>();
         it2.forEachRemaining(list2::add);
         for (Statement s : list2) {
-            System.out.println(s.toString());           
+            LOGGER.info(s.toString());           
         }
-        System.out.println(it2.hasNext() ? "it2 not empty" : "it2 empty");
+        LOGGER.info(it2.hasNext() ? "it2 not empty" : "it2 empty");
     }
 
     private static void testIteratorToList() {
@@ -89,23 +253,23 @@ public class Main {
         model.add(bill, property, mary);
 
         StmtIterator it = model.listStatements();
-        System.out.println(it.hasNext() ? "iterator not empty" : "iterator empty");
+        LOGGER.info(it.hasNext() ? "iterator not empty" : "iterator empty");
         printModel(model, "Model before consuming iterator");
         List<Statement> list1 = it.toList(); // This consumes the iterator
         while (it.hasNext()) {
             Statement s = it.nextStatement();
-            System.out.println("statement " + s.toString());            
+            LOGGER.info("statement " + s.toString());            
         }
-        System.out.println(it.hasNext() ? "iterator not empty" : "iterator empty");       
+        LOGGER.info(it.hasNext() ? "iterator not empty" : "iterator empty");       
         printModel(model, "Model after consuming iterator");
     }
 
     private static void testNodeGetLiteral() {
         
         Node node = NodeFactory.createLiteral("Hello world", "en");
-        System.out.println(node.getLiteral()); // Hello world@en
-        System.out.println(node.getLiteralValue()); // Hello world
-        System.out.println(node.getLiteralLanguage()); // en
+        LOGGER.info(node.getLiteral()); // Hello world@en
+        LOGGER.info(node.getLiteralValue()); // Hello world
+        LOGGER.info(node.getLiteralLanguage()); // en
 
     }
 
@@ -127,7 +291,7 @@ public class Main {
         String value = literal.getString();
         value = "Goodbye world";
         printModel(model); // "Hello world"@en
-        System.out.println(literal.getString()); // Hello world
+        LOGGER.info(literal.getString()); // Hello world
         Literal literal2 = model.createLiteral(value, "en");
         Statement statement2 = model.createStatement(subject, property, literal2);
         // model.remove(statement);
@@ -135,8 +299,8 @@ public class Main {
         printModel(model); // "Goodbye world"@en, "Hello world"@en
         literal = model.createLiteral("Bonjour");
         printModel(model); // "Goodbye world"@en, "Hello world"@en
-        System.out.println(literal.toString()); // Bonjour
-        System.out.println(statement.toString()); // "Hello world"@en
+        LOGGER.info(literal.toString()); // Bonjour
+        LOGGER.info(statement.toString()); // "Hello world"@en
        
     }
 
@@ -147,37 +311,37 @@ public class Main {
         String language2 = "";
         String language3 = null;
         
-        System.out.println("Create node with non-empty language string: OK");
+        LOGGER.info("Create node with non-empty language string: OK");
         Node node1 = NodeFactory.createLiteral(value, language1);        
-        System.out.println("node1: " + node1.toString()); // "Hello world"@en
-        System.out.println("node1 language: #" + node1.getLiteralLanguage() + "#"); // #en#
+        LOGGER.info("node1: " + node1.toString()); // "Hello world"@en
+        LOGGER.info("node1 language: #" + node1.getLiteralLanguage() + "#"); // #en#
 
-        System.out.println("Create node with empty language string: OK");
+        LOGGER.info("Create node with empty language string: OK");
         Node node2 = NodeFactory.createLiteral(value, language2);        
-        System.out.println("node2: " + node2.toString()); // "Hello world"
-        System.out.println("node2 language: #" + node2.getLiteralLanguage() + "#"); // ##
+        LOGGER.info("node2: " + node2.toString()); // "Hello world"
+        LOGGER.info("node2 language: #" + node2.getLiteralLanguage() + "#"); // ##
         
-        System.out.println("Create node with null language string: OK");
+        LOGGER.info("Create node with null language string: OK");
         Node node3 = NodeFactory.createLiteral(value, language3);        
-        System.out.println("node3: " + node3.toString()); // "Hello world"
-        System.out.println("node3 language: #" + node3.getLiteralLanguage() + "#"); // ##
+        LOGGER.info("node3: " + node3.toString()); // "Hello world"
+        LOGGER.info("node3 language: #" + node3.getLiteralLanguage() + "#"); // ##
 
         Model model = ModelFactory.createDefaultModel();
 
-        System.out.println("Create literal with non-empty language string: OK");
+        LOGGER.info("Create literal with non-empty language string: OK");
         Literal literal1 = model.createLiteral(value, language1);        
-        System.out.println("literal1: " + literal1.toString()); // "Hello world"@en
-        System.out.println("literal1 language: #" + literal1.getLanguage() + "#"); // #en#
+        LOGGER.info("literal1: " + literal1.toString()); // "Hello world"@en
+        LOGGER.info("literal1 language: #" + literal1.getLanguage() + "#"); // #en#
 
-        System.out.println("Create literal with empty language string: OK");
+        LOGGER.info("Create literal with empty language string: OK");
         Literal literal2 = model.createLiteral(value, language2);        
-        System.out.println("literal2: " + literal2.toString()); // "Hello world"
-        System.out.println("literal2 language: #" + literal2.getLanguage() + "#"); // ##
+        LOGGER.info("literal2: " + literal2.toString()); // "Hello world"
+        LOGGER.info("literal2 language: #" + literal2.getLanguage() + "#"); // ##
         
-        System.out.println("Create literal with null language string: OK");
+        LOGGER.info("Create literal with null language string: OK");
         Literal literal3 = model.createLiteral(value, language3);        
-        System.out.println("literal3: " + literal3.toString()); // "Hello world"
-        System.out.println("literal3 language: #" + literal3.getLanguage() + "#"); // ##
+        LOGGER.info("literal3: " + literal3.toString()); // "Hello world"
+        LOGGER.info("literal3 language: #" + literal3.getLanguage() + "#"); // ##
         
     }
 
@@ -195,18 +359,18 @@ public class Main {
         Literal l5 = model.createLiteral("Hello world", "en");
         Literal l6 = model.createTypedLiteral("Hello world", XSDDatatype.XSDstring);
         
-        System.out.println("l1: " + l1.toString());
-        System.out.println("l2: " + l2.toString());
-        System.out.println("l3: " + l3.toString());
-        System.out.println("l4: " + l4.toString());
-        System.out.println("l5: " + l5.toString());
-        System.out.println("l6: " + l6.toString());
-        System.out.println("l1 == l2: " + l1.sameValueAs(l2));
-        System.out.println("l1 == l3: " + l1.sameValueAs(l3)); 
-        System.out.println("l2 == l3: " + l2.sameValueAs(l3));
-        System.out.println("l1 == l4: " + l1.sameValueAs(l4));
-        System.out.println("l1 == l5: " + l1.sameValueAs(l5));
-        System.out.println("l1 == l6: " + l1.sameValueAs(l6));
+        LOGGER.info("l1: " + l1.toString());
+        LOGGER.info("l2: " + l2.toString());
+        LOGGER.info("l3: " + l3.toString());
+        LOGGER.info("l4: " + l4.toString());
+        LOGGER.info("l5: " + l5.toString());
+        LOGGER.info("l6: " + l6.toString());
+        LOGGER.info("l1 == l2: " + l1.sameValueAs(l2));
+        LOGGER.info("l1 == l3: " + l1.sameValueAs(l3)); 
+        LOGGER.info("l2 == l3: " + l2.sameValueAs(l3));
+        LOGGER.info("l1 == l4: " + l1.sameValueAs(l4));
+        LOGGER.info("l1 == l5: " + l1.sameValueAs(l5));
+        LOGGER.info("l1 == l6: " + l1.sameValueAs(l6));
         
         Node n1 = NodeFactory.createLiteral("Hello world", "en");
         Node n2 = NodeFactory.createLiteral("Bonjour", "fr");
@@ -215,18 +379,18 @@ public class Main {
         Node n5 = NodeFactory.createLiteral("Hello world", "en");
         Node n6 = NodeFactory.createLiteral("Hello world", XSDDatatype.XSDstring);
         
-        System.out.println("n1: " + n1.toString());
-        System.out.println("n2: " + n2.toString());
-        System.out.println("n3: " + n3.toString());
-        System.out.println("n4: " + n4.toString());
-        System.out.println("n5: " + n5.toString());
-        System.out.println("n6: " + n6.toString());
-        System.out.println("n1 == n2: " + n1.sameValueAs(n2));
-        System.out.println("n1 == n3: " + n1.sameValueAs(n3)); 
-        System.out.println("n2 == n3: " + n2.sameValueAs(n3));
-        System.out.println("n1 == n4: " + n1.sameValueAs(n4));
-        System.out.println("n1 == n5: " + n1.sameValueAs(n5));
-        System.out.println("n1 == n6: " + n1.sameValueAs(n6));
+        LOGGER.info("n1: " + n1.toString());
+        LOGGER.info("n2: " + n2.toString());
+        LOGGER.info("n3: " + n3.toString());
+        LOGGER.info("n4: " + n4.toString());
+        LOGGER.info("n5: " + n5.toString());
+        LOGGER.info("n6: " + n6.toString());
+        LOGGER.info("n1 == n2: " + n1.sameValueAs(n2));
+        LOGGER.info("n1 == n3: " + n1.sameValueAs(n3)); 
+        LOGGER.info("n2 == n3: " + n2.sameValueAs(n3));
+        LOGGER.info("n1 == n4: " + n1.sameValueAs(n4));
+        LOGGER.info("n1 == n5: " + n1.sameValueAs(n5));
+        LOGGER.info("n1 == n6: " + n1.sameValueAs(n6));
     }
 
     private static void testAddStmtIteratorToModel() {
@@ -304,7 +468,7 @@ public class Main {
          * [http://example.com/data/mary, http://www.w3.org/1999/02/22-rdf-syntax-ns#type, http://example.com/vocab/oldClass]
          */
         
-        System.out.println("=================================================");
+        LOGGER.info("=================================================");
    
         // Works
         mary = ResourceUtils.renameResource(mary, 
@@ -343,9 +507,9 @@ public class Main {
             Model model = ModelFactory.createDefaultModel();
             String filename = file.toString();
             model.read(filename);
-            System.out.println(file.getName());
+            LOGGER.info(file.getName());
             isObjectNull(model);
-            System.out.println("=================================================");
+            LOGGER.info("=================================================");
         }
         
         /*
@@ -436,20 +600,20 @@ public class Main {
         while (stmts.hasNext()) {
             Statement stmt = stmts.nextStatement();
             if (stmt.getPredicate().getURI().equals("http://www.loc.gov/mads/rdf/v1#isMemberOfMADSScheme")) {
-                System.out.println(stmt.toString());
+                LOGGER.info(stmt.toString());
                 RDFNode object = stmt.getObject();
                 if (object == null) {
-                    System.out.println("Null object");
+                    LOGGER.info("Null object");
                 } else if (object.isLiteral()) {               
-                    System.out.println("Literal object: " + object.asLiteral().getLexicalForm());
+                    LOGGER.info("Literal object: " + object.asLiteral().getLexicalForm());
                 } else if (object.isAnon()) {
-                    System.out.println("Blank node object: " + object.asNode().getBlankNodeLabel());
+                    LOGGER.info("Blank node object: " + object.asNode().getBlankNodeLabel());
                 } else {
                     String uriString = object.asResource().getURI();
-                    System.out.println("Resource object: " + uriString);
+                    LOGGER.info("Resource object: " + uriString);
                     try {
                         URI uri = new URI(uriString);
-                        System.out.println("URI scheme: " + uri.getScheme());                       
+                        LOGGER.info("URI scheme: " + uri.getScheme());                       
                     } catch (URISyntaxException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -463,11 +627,11 @@ public class Main {
     private static void printModel(Model model, String msg) {
         
         if (msg != null) {
-            System.out.println(msg);
+            LOGGER.info(msg);
         }
         StmtIterator stmts = model.listStatements();
         while (stmts.hasNext()) {
-            System.out.println(stmts.next().toString());
+            LOGGER.info(stmts.next().toString());
         }
     }
     
