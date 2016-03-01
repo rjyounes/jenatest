@@ -60,9 +60,30 @@ public class Main {
         // testUriChars();
         // testModelRemovesDuplicateTriples();
         // testEmptyIteratorToList();
-        testInfModel();
+        // testInfModel();
+        testAddModel();
 
         LOGGER.info("End tests.");
+    }
+    
+    @SuppressWarnings("unused")
+    private static void testAddModel() {
+        Model data = ModelFactory.createDefaultModel(); 
+        try {
+            data.read("rdf/data/102063.nt");
+        } catch (RiotException e) {
+           e.printStackTrace();
+        }
+        printModel(data, "original model:");
+        
+        Model nullModel = null;
+        if (nullModel != null) {
+            data.add(nullModel);
+        }
+        
+        Model emptyModel = ModelFactory.createDefaultModel();
+        data.add(emptyModel);
+        printModel(data, "added empty model");
     }
     
     private static void testInfModel() {
@@ -629,9 +650,11 @@ public class Main {
         if (msg != null) {
             LOGGER.info(msg);
         }
+        int stmtCount = 0;
         StmtIterator stmts = model.listStatements();
         while (stmts.hasNext()) {
-            LOGGER.info(stmts.next().toString());
+            stmtCount++;
+            LOGGER.info(stmtCount + ". " + stmts.next().toString());
         }
     }
     
