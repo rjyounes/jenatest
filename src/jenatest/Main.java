@@ -77,11 +77,13 @@ public class Main {
         printModel(data, "original model:");
         
         Model nullModel = null;
+        // Can't add null model!
         if (nullModel != null) {
             data.add(nullModel);
         }
         
         Model emptyModel = ModelFactory.createDefaultModel();
+        // Can add empty model
         data.add(emptyModel);
         printModel(data, "added empty model");
     }
