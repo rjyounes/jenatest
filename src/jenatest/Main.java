@@ -61,9 +61,21 @@ public class Main {
         // testModelRemovesDuplicateTriples();
         // testEmptyIteratorToList();
         // testInfModel();
-        testAddModel();
+        // testAddModel();
+        testChangeString();
 
         LOGGER.info("End tests.");
+    }
+    
+    private static void testChangeString() {
+        String str = "My string";
+        LOGGER.debug("Original string: " + str); // My string
+        change(str);
+        LOGGER.debug("New string: " + str); // My string
+    }
+    
+    private static void change(String s) {
+        s = "a new string";
     }
     
     @SuppressWarnings("unused")
